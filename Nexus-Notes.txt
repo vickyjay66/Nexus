@@ -1,0 +1,887 @@
+Nexus by KK FUNDA
+=================
+
+--> Explain the flow diagram.
+
+
+dev1  --> GitHub ---> maven[.war] --->  tomcat 
+
+dev1 --> GitHub ----> maven [.war] ---> tomcat 
+
+
+
+
+
+
+Introduction
+============
+
+--> Nexus is a repository manager that serves as a central hub for managing binary artifacts such as libraries, Docker images, and other build artifacts.
+
+--> It provides a secure and efficient way to store, distribute, and manage software components and dependencies throughout the software development lifecycle.
+
+--> It is a Open Source software.
+
+--> It is java based repository, Means they developed using JAVA.
+
+
+
+
+
+
+
+
+
+
+
+Types 
+=======
+
+1. Nexus ---> [sonatype vendor] ---> called as a sonatype nexus
+2. Jfrog .....
+
+
+
+
+
+
+
+
+
+
+
+
+
+git -->GitHub/Gitlab/bitbucket  --->
+
+
+
+IQ] what is the difference between GitHub and nexus?
+
+GitHub: used to manage the source code.
+Nexus : used to manage the build artifacts.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Nexus installation
+==================
+
+prerequsites
+------------
+
+--> java 1.8 or java 8 is required for 3.x version
+
+NOTE:  If you want use the nexus, We are using maven because of java projects.
+
+Hardware requirements
+----------------------
+--> min 2GB RAM required for Nexus and 1 GB RAM for server, so we are going with "t2.medium"
+
+--> It is a cross platform software.
+
+--> It is not a installation software, Has only in the archive file.
+
+NOTE: After installation of nexus software , Two directories are created.
+     
+      1. nexus3.x
+      2. sonatype_work ----> common for all versions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Installation starts
+===================
+
+
+
+step 1: Launch an EC2 instance [t2.medium]
+
+step 2: connect to that server.
+
+step 3: Before installation check the RAM once: "free -h "
+
+step 4: sudo su -
+
+step 5: check whether java is installed or not.
+
+     javac -version
+
+step 6: Install java
+ 
+#Install JDK 1.8 
+sudo yum install java-1.8.0-openjdk-devel -y
+
+javac -version
+
+step 7: 
+
+cd /opt	
+
+yum install tar wget tree -y
+
+step 8: 
+
+
+
+https://download.sonatype.com/nexus/3/nexus-3.70.1-02-java8-unix.tar.gz
+
+wget https://download.sonatype.com/nexus/3/nexus-3.70.1-02-java8-unix.tar.gz
+
+
+step 9: 
+
+tar -zxvf nexus-3.70.1-02-java8-unix.tar.gz
+
+
+step 10:
+
+mv /opt/nexus-3.70.1-02 /opt/nexus
+
+
+
+NOTE: As a good security practice, Nexus is not advised to run nexus service as a root user, so create a new user called nexus and grant sudo access to manage nexus services as follows.
+
+
+step 11: 
+
+useradd nexus
+
+step 12: Give the sudo access to nexus user
+
+visudo
+nexus ALL=(ALL) NOPASSWD: ALL
+
+step 13: Change the owner and group permissions to /opt/nexus and /opt/sonatype-work directories.
+
+chown -R nexus:nexus /opt/nexus
+chown -R nexus:nexus /opt/sonatype-work
+
+chmod -R 775 /opt/nexus
+chmod -R 775 /opt/sonatype-work
+
+
+step 14: Open /opt/nexus/bin/nexus.rc file and  uncomment run_as_user parameter and set as nexus user.
+
+vi /opt/nexus/bin/nexus.rc
+run_as_user="nexus"
+
+step 15: Create nexus as a service
+
+ln -s /opt/nexus/bin/nexus /etc/init.d/nexus
+
+
+step 16: Switch as a nexus user and start the nexus service as follows.
+
+sudo su - nexus
+
+step 17: Enable the nexus services
+
+sudo systemctl status nexus
+
+sudo systemctl enable nexus
+
+step 18: Start the nexus service
+
+sudo systemctl start nexus
+
+step 19:  Access the Nexus server from Laptop/Desktop browser.
+
+http://52.66.73.219:8081/
+
+step 20: click on login
+
+NOTE: Before 3.15 version uname and password is admin and admin123 , But now process changed.
+
+cat /opt/sonatype-work/nexus3/admin.password
+
+Uname: admin   pwd: kkfunda
+
+
+
+
+Troubleshooting
+---------------------
+nexus service is not starting?
+
+a)make sure need to change the ownership and group to /opt/nexus and /opt/sonatype-work directories and permissions (775) for nexus user.
+b)make sure you are trying to start nexus service with nexus user.
+c)check java is installed or not using java -version command.
+d) check the nexus.log file which is available in  /opt/sonatype-work/nexus3/log  directory.
+
+Unable to access nexus URL?
+-------------------------------------
+a)make sure port 8081 is opened in security groups in AWS ec2 instance.
+
+
+=============================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+IQ] How to change the port number and context path?
+
+step 1: cd /opt/nexus/etc/
+
+step 2: vi nexus-default.properties
+
+step 3: sudo systemctl restart nexus
+
+NOTE: please make sure to enable the port in security groups.
+
+
+
+===============================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+NOTE: Before login into server the browse options are opened, How to close this?
+
+login as a root user --> go to settings --> security --> Anonymous Access --> disable the icon
+
+
+
+
+
+
+
+
+
+===============================================================================================
+
+How to change the password?
+
+ login as root user --> click on admin --> give all the details
+
+================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+How to create a repository?
+
+login as a admin --> settings --> create repository --> maven2(hosted)--> give name as jio-snapshot -->
+select version policy [snapshot] --> scroll down ---> create repository. 
+
+
+login as a admin --> settings --> create repository --> maven2(hosted)--> give name as jio-release -->
+select version policy [release] --> scroll down ---> create repository. 
+
+
+NOTE: For each project we are going to create two types of repositories.
+
+      1. jio-snapshot
+      2. jio-release
+
+NOTE: Each repository we have separate URL
+  
+     http://13.232.249.217:8639/kkfunda/repository/jio-release/
+     http://13.232.249.217:8639/kkfunda/repository/jio-snapshot/
+
+
+
+===================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+How to integrate nexus with maven?
+==================================
+
+step 1: connect to maven server, Where java projects are available
+
+step 2: where to keep our repository details?
+
+update the details in pom.xml
+
+          <distributionManagement>
+
+            <repository>
+              <id>nexus</id>
+              <name>KK FUNDA Releases Nexus Repository</name>
+              <url>http://13.232.249.217:8639/kkfunda/repository/jio-release/</url>
+            </repository>
+
+            <snapshotRepository>
+              <id>nexus</id>
+              <name>KK FUNDA Snapshot Nexus Repository </name>
+              <url>http://13.232.249.217:8639/kkfunda/repository/jio-snapshot/</url>
+            </snapshotRepository>
+
+        </distributionManagement>
+
+step 3: Where we need to keep nexus credentials?
+
+--> In SonarQube we updated credentials in pom.xml
+--> In nexus, repo details in pom.xml and credentials in /opt/apache-maven-3.9.8/conf/settings.xml
+
+   <server>
+      <id>nexus</id>
+      <username>admin</username>
+      <password>kkfunda123</password>
+    </server>
+
+
+==============================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+IQ] How to deploy antifactory into nexus?
+
+step 1: go to project directory , Where the pom.xml is available.
+
+step 2: mvn clean deploy
+
+NOTE: if you execute "mvn clean deploy" multiple times , Each time it will upload war file into "nexus snapshot repository"
+
+
+====================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+IQ] why it is always uploading into snapshot repo, why not release repo?
+
+ANS: In pom.xml <version> tag we defined "snapshot" , If you remove that tag then it will store in the release repo.
+
+add  <version>1.0.0</version>
+
+
+NOTE: one version, you can create only once, If you are tying to deploy again without changing the version, you will get bad request error (400)
+
+   mvn clean deploy ----> Build will fail.
+
+
+settings ---> select repo --> policy --> allow redeploy ---> save
+
+
+  mvn clean deploy
+
+
+
+
+
+====================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+          
+
+
+
+IQ] what is the difference between snapshot and release ?
+
+SNAPSHOT: used in continuous deployment.
+Release : Before deploy into production.
+
+IQ] How to store artifacts into maven local repository?
+
+   mvn clean install
+
+IQ] How to store artifacts into maven remote repository?
+
+  mvn clean deploy
+
+
+=====================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Requirement : release 1.0.0 has some bugs, I want to redeploy the artifact with the same version.
+
+sol:  settings --> repository --> jio-release --> scroll down --> Hosted --> allow redeploy --> save
+
+
+Then mvn clean deploy ---> It will redeploy.
+
+Then select  "Disable redeploy"
+
+===================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+IQ] How to upload dependencies into remote repository?
+
+step 1: create a repository to keep dependencies.
+
+login as a admin --> settings --> create repository --> maven2(hosted)--> give name as jio-remoterepo -->
+select version policy [mixed] --> scroll down ---> create repository.
+
+step 2: upload dependencies like jar files, Actually development team will share to us.
+
+step 3: search on google : log4j jar file download
+
+step 4: Upload that jar file.
+
+go to browse options --> select repo --> click on upload --> select a jar file to upload --> groupid(apache) --> artifactid(log4j) --> version (1.0.0) --> click on upload.
+
+ 
+
+step 5: copy the dependency for that jar file.
+
+
+<dependency>
+  <groupId>apache</groupId>
+  <artifactId>log4j</artifactId>
+  <version>1.0.0</version>
+</dependency>
+
+
+step 6: update in pom.xml under <dependencies> tag.
+
+step 7: mvn clean package  --> It will fail because  that dependency not available in central repository.
+
+step 8: Take the remote repo url and configure.
+
+<repositories>
+  <repository>
+   <id>nexus</id>
+    <url>http://13.232.249.217:8639/kkfunda/repository/jio-remoteRepo/</url>
+  </repository>
+</repositories> 
+
+
+
+
+Add before <dependencies>
+
+step 8: mvn clean package --> might you will get different error ---> update the settings.xml
+
+cd /opt/mavenhomedir/conf/
+
+vi settings.xml
+update the <mirror> tag 
+
+step 9: mvn clean package
+
+
+===============================================================================================
+
+
+
+
+
+
+
+
+
+IQ] what is maven2(proxy)repository?
+
+--> explain the diagram
+
+step 1: create proxy repo
+
+--> settings --> repositories --> create repository --> maven2(proxy) --> name (jio-proxyRepo) -->
+version policy(mixed) --> remote Storage (give same as ex) --> create repository
+
+step 2: take proxy repo url and update in the pom.xml
+
+http://43.205.212.116:8639/kkfunda/repository/jio-proxyrepo/
+
+<repositories>
+  <repository>
+   <id>nexus</id>
+    <url>http://43.205.212.116:8639/kkfunda/repository/jio-proxyrepo/</url>
+  </repository>
+</repositories>
+
+
+step 3: update same url in settings.xml of mirror tag
+
+
+cd /opt/apache-maven-3.9.8/conf/
+
+vi settings.xml
+
+http://13.201.58.184:9676/kkfunda/repository/jio-proxyRepo/
+
+
+step 4: go to maven local repo and delete some dependencies.
+
+cd ~/mavenlocalrepo/
+rm -rf junit
+
+step 5: go to your project folder
+
+cd /opt/kk-projects/maven-web-app-project-kk-funda/
+
+step 6:
+
+mvn clean package
+
+step 7: central ---> remote proxy ---> local repo 
+
+go and check remote reposity dependencies are downloaded or not
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=======================================================================
+
+IQ] what is the maven2[group]
+
+--> explain the diagram
+
+
+
+
+ cd ~/mavenlocalrepo/
+ rm -rf apache/
+
+cd /opt/kk-projects/maven-web-app-project-kk-funda/
+
+mvn clean package  ---> you will get an error [apache is trying to download from remote repo but you 				configured proxy), Then how to create a group repository.
+
+step 1:
+
+--> settings --> repositories --> create repository --> maven2(group) --> name (jio-grouprepo) -->
+version policy(mixed) --> select jio-remoterepo and jio-proxyrepo add it --> create a repository.
+
+http://43.205.212.116:8639/kkfunda/repository/jio-grouprepo/
+
+step 2: configure group url
+
+update in pom.xml
+-----------------
+<repositories>
+  <repository>
+   <id>nexus</id>
+    <url>http://43.205.212.116:8639/kkfunda/repository/jio-grouprepo/</url>
+  </repository>
+</repositories>
+
+
+
+update same url in settings.xml of mirror tag
+
+
+cd /opt/apache-maven-3.9.8/conf/
+
+vi settings.xml
+
+step 3: go to your project folder
+
+mvn clean package
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Nexus Adminstration
+===================
+
+Repositories
+-------------
+
+Blob stores
+------------
+
+cleanup policies
+----------------
+.....
+
+
+Jenkins  ---> LDAP
+
+sq  ---> LDAP
+
+nexus
+
+aws
+
+
+curl -X 'DELETE' \
+  'http://43.205.212.116:8639/kkfunda/repository/jio-grouprepo/' \
+  -H 'accept: application/json' \
+  -H 'NX-ANTI-CSRF-TOKEN: 0.13658101830795766' \
+  -H 'X-Nexus-UI: true'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
