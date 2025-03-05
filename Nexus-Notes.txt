@@ -197,7 +197,7 @@ step 14: Open /opt/nexus/bin/nexus.rc file and  uncomment run_as_user parameter 
 
 vi /opt/nexus/bin/nexus.rc
 run_as_user="nexus"
-
+we should do umcomment here
 step 15: Create nexus as a service
 
 ln -s /opt/nexus/bin/nexus /etc/init.d/nexus
